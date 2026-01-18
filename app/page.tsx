@@ -4,9 +4,8 @@ import { Features } from "@/components/features"
 import { CurrencySection } from "@/components/currency-section"
 import { VirtualCard } from "@/components/virtual-card"
 import { SecuritySection } from "@/components/security-section"
-import { AISupport } from "@/components/ai-support"
+// import { AISupport } from "@/components/ai-support"
 import { Footer } from "@/components/footer"
-
 export default function Home() {
   return (
     <main className="min-h-screen bg-background">
@@ -16,7 +15,7 @@ export default function Home() {
       <CurrencySection />
       <VirtualCard />
       <SecuritySection />
-      <AISupport />
+      {/* <AISupport /> */}
       <Footer />
     </main>
   )
