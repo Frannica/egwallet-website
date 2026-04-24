@@ -82,11 +82,10 @@ export function Footer() {
                   Contact Us
                 </a>
               </li>
-           <li>
-  <a href="/privacy.html" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-    Privacy Policy
-  </a>
-</li>
+              <li>
+                <a href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Privacy Policy
+                </a>
               </li>
               <li>
                 <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
