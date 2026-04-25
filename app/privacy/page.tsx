@@ -20,7 +20,7 @@ export default function PrivacyPolicyPage() {
         </Link>
 
         <h1 className="text-4xl font-bold mb-2">Privacy Policy</h1>
-        <p className="text-muted-foreground mb-8">Last updated: January 8, 2025</p>
+        <p className="text-muted-foreground mb-8">Last updated: April 24, 2026</p>
 
         <div className="prose prose-invert max-w-none space-y-8">
           <section>
@@ -132,8 +132,18 @@ export default function PrivacyPolicyPage() {
             </p>
             <div className="mt-4 p-4 bg-card rounded-lg border border-border">
               <p className="text-foreground font-medium">E.G. Wallet Support</p>
-              <p className="text-muted-foreground">Email: privacy@egwallet.com</p>
-              <p className="text-muted-foreground">Website: www.egwallet.com</p>
+              <p className="text-muted-foreground">
+                Email:{" "}
+                <a href="mailto:support@egwalletfinance.com" className="text-foreground underline hover:no-underline">
+                  support@egwalletfinance.com
+                </a>
+              </p>
+              <p className="text-muted-foreground">
+                Website:{" "}
+                <a href="https://www.egwalletfinance.com" className="text-foreground underline hover:no-underline">
+                  www.egwalletfinance.com
+                </a>
+              </p>
             </div>
           </section>
         </div>
