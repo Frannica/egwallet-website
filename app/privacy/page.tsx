@@ -22,7 +22,7 @@ export default function PrivacyPolicyPage() {
         <h1 className="text-4xl font-bold mb-2">Privacy Policy</h1>
         <p className="text-muted-foreground mb-8">Last updated: April 24, 2026</p>
 
-        <div className="prose prose-invert max-w-none space-y-8">
+        <div className="prose max-w-none space-y-8">
           <section>
             <h2 className="text-2xl font-semibold mb-4 text-foreground">1. Introduction</h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -53,7 +53,7 @@ export default function PrivacyPolicyPage() {
               <li>Process your transactions and manage your account</li>
               <li>Provide multi-currency wallet services (XAF, XOF, NGN, GHS, ZAR, CNY, USD, EUR)</li>
               <li>Enable money transfers and virtual debit card services</li>
-              <li>Provide customer support via our 24/7 AI assistant</li>
+              <li>Provide customer support, including in-app support tools where available</li>
               <li>Send transaction notifications and account alerts</li>
               <li>Comply with legal and regulatory requirements</li>
               <li>Prevent fraud and enhance security</li>
@@ -66,7 +66,7 @@ export default function PrivacyPolicyPage() {
               We implement industry-standard security measures to protect your personal information, including:
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 mt-4">
-              <li>End-to-end encryption for all transactions</li>
+              <li>Encryption for data in transit and at rest</li>
               <li>Biometric authentication (fingerprint and face recognition)</li>
               <li>Two-factor authentication (2FA)</li>
               <li>Secure data storage and transmission protocols</li>

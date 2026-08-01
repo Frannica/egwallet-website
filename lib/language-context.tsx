@@ -1,55 +1,51 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
-import { translations, type Language } from "./translations"
+import { RTL_LANGUAGES, translations, type Language, type TranslationKey } from "./translations"
 
 interface LanguageContextType {
   language: Language
   setLanguage: (lang: Language) => void
-  // Accepts keys like "heroTitle" OR "hero.title" (dot notation)
-  t: (key: string) => string
+  t: (key: TranslationKey) => string
+  dir: "ltr" | "rtl"
+  isRtl: boolean
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined)
 
-function getByPath(obj: unknown, path: string): unknown {
-  return path.split(".").reduce((acc: any, part) => (acc && typeof acc === "object" ? acc[part] : undefined), obj as any)
-}
-
-function toText(value: unknown): string {
-  if (typeof value === "string") return value
-  if (typeof value === "number" || typeof value === "boolean") return String(value)
-  // IMPORTANT: if it’s an object/array/etc, return empty string to avoid:
-  // "Objects are not valid as a React child"
-  return ""
-}
-
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguage] = useState<Language>("es")
+  const [language, setLanguage] = useState<Language>("en")
+  const isRtl = RTL_LANGUAGES.includes(language)
+  const dir: "ltr" | "rtl" = isRtl ? "rtl" : "ltr"
 
   useEffect(() => {
     const savedLang = localStorage.getItem("language") as Language | null
-    if (
-      savedLang &&
-      (savedLang === "en" || savedLang === "es" || savedLang === "fr" || savedLang === "ru" || savedLang === "zh")
-    ) {
+    if (savedLang && savedLang in translations) {
       setLanguage(savedLang)
+    } else if (savedLang === "ru") {
+      // Russian removed — fall back to English
+      localStorage.setItem("language", "en")
+      setLanguage("en")
     }
   }, [])
+
+  useEffect(() => {
+    document.documentElement.lang = language
+    document.documentElement.dir = dir
+    document.documentElement.classList.toggle("rtl", isRtl)
+  }, [language, dir, isRtl])
 
   const handleSetLanguage = (lang: Language) => {
     setLanguage(lang)
     localStorage.setItem("language", lang)
   }
 
-  const t = (key: string): string => {
-    const current = getByPath(translations[language], key)
-    const fallback = getByPath(translations.en, key)
-    return toText(current) || toText(fallback)
+  const t = (key: TranslationKey): string => {
+    return translations[language][key] || translations.en[key] || String(key)
   }
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage: handleSetLanguage, t, dir, isRtl }}>
       {children}
     </LanguageContext.Provider>
   )
