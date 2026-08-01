@@ -3,10 +3,26 @@ export const SITE = {
   legalName: "E.G. Wallet",
   url: "https://www.egwalletfinance.com",
   supportEmail: "support@egwalletfinance.com",
-  /** Featured examples for marketing rate cards — not a complete operational inventory. */
-  currencies: ["XAF", "XOF", "NGN", "GHS", "ZAR", "CNY", "USD", "EUR"] as const,
-  /** Currencies that must never be labeled as live market rates on the marketing site. */
-  alwaysIndicativeCurrencies: ["XAF", "XOF", "NGN", "GHS"] as const,
+  /**
+   * Converter / rate-card currencies verified against Frankfurter v2 (real daily reference rates).
+   * Do not add a code here unless latest + history both return real data.
+   */
+  currencies: [
+    "CNY",
+    "JPY",
+    "XAF",
+    "XOF",
+    "NGN",
+    "GHS",
+    "ZAR",
+    "KES",
+    "EGP",
+    "TZS",
+    "MAD",
+    "USD",
+    "EUR",
+    "GBP",
+  ] as const,
   /**
    * Production cash-out corridors evidenced by app + Kora rules (not exhaustive forever):
    * mobile money: CM/XAF, CI/XOF, GH/GHS, KE/KES, EG/EGP, TZ/TZS

@@ -1,87 +1,83 @@
 import { NextResponse } from "next/server"
+import { CURRENCY_CODES } from "@/lib/currencies"
 
-// Frankfurter covers major market currencies. XAF/XOF/NGN/GHS are always indicative
-// on the marketing site — never presented as live market rates.
-const EXCHANGE_API_URL = "https://api.frankfurter.app/latest?from=USD"
+const FRANKFURTER_V2 = "https://api.frankfurter.dev/v2/rates"
+const QUOTES = CURRENCY_CODES.filter((c) => c !== "USD").join(",")
 
-const INDICATIVE_FALLBACKS: Record<string, number> = {
-  XAF: 620,
-  XOF: 620,
-  NGN: 1550,
-  GHS: 15.5,
+type FrankfurterRow = {
+  date?: string
+  base?: string
+  quote?: string
+  rate?: number
 }
 
-const ALWAYS_INDICATIVE = new Set(["XAF", "XOF", "NGN", "GHS"])
-
+/**
+ * Daily reference rates from Frankfurter v2 only.
+ * Never fabricates rates. Currencies missing from the response are omitted.
+ */
 export async function GET() {
   try {
-    const response = await fetch(EXCHANGE_API_URL, {
-      next: { revalidate: 3600 },
-    })
+    const url = `${FRANKFURTER_V2}?base=USD&quotes=${encodeURIComponent(QUOTES)}`
+    const response = await fetch(url, { next: { revalidate: 3600 } })
 
     if (!response.ok) {
-      throw new Error("Failed to fetch exchange rates")
+      return NextResponse.json(
+        {
+          rates: {},
+          sources: {},
+          lastUpdated: "",
+          label: "Daily reference rate",
+          provider: "frankfurter-v2",
+          error: "provider_error",
+        },
+        { status: 502 }
+      )
     }
 
-    const data = await response.json()
-    const rates: Record<string, number> = {
-      USD: 1,
-      EUR: data.rates?.EUR ?? 0.92,
-      ZAR: data.rates?.ZAR ?? 18.5,
-      CNY: data.rates?.CNY ?? 7.24,
-      XAF: INDICATIVE_FALLBACKS.XAF,
-      XOF: INDICATIVE_FALLBACKS.XOF,
-      NGN: INDICATIVE_FALLBACKS.NGN,
-      GHS: INDICATIVE_FALLBACKS.GHS,
+    const data = (await response.json()) as FrankfurterRow[] | FrankfurterRow
+    const rows = Array.isArray(data) ? data : [data]
+
+    const rates: Record<string, number> = { USD: 1 }
+    const sources: Record<string, "reference"> = { USD: "reference" }
+    let newestDate = ""
+
+    for (const row of rows) {
+      const quote = row.quote?.toUpperCase()
+      const rate = row.rate
+      if (!quote || quote === "USD") continue
+      if (!CURRENCY_CODES.includes(quote as (typeof CURRENCY_CODES)[number])) continue
+      if (typeof rate !== "number" || !Number.isFinite(rate) || rate <= 0) continue
+      rates[quote] = rate
+      sources[quote] = "reference"
+      if (row.date && row.date > newestDate) newestDate = row.date
     }
 
-    const sources: Record<string, "live" | "indicative"> = {
-      USD: "live",
-      EUR: data.rates?.EUR != null ? "live" : "indicative",
-      ZAR: data.rates?.ZAR != null ? "live" : "indicative",
-      CNY: data.rates?.CNY != null ? "live" : "indicative",
-      XAF: "indicative",
-      XOF: "indicative",
-      NGN: "indicative",
-      GHS: "indicative",
-    }
-
-    // Belt-and-suspenders: never allow African fallbacks to be marked live.
-    for (const code of ALWAYS_INDICATIVE) {
-      sources[code] = "indicative"
-      rates[code] = INDICATIVE_FALLBACKS[code]
-    }
+    // Only expose codes that actually returned real data (USD always present as base).
+    const functional = CURRENCY_CODES.filter((code) => typeof rates[code] === "number" && rates[code] > 0)
 
     return NextResponse.json({
       rates,
       sources,
-      lastUpdated: data.date || new Date().toISOString().split("T")[0],
+      currencies: functional,
+      lastUpdated: newestDate || new Date().toISOString().slice(0, 10),
+      label: "Daily reference rate",
+      provider: "frankfurter-v2",
+      updateFrequency: "daily",
+      informationalOnly: true,
     })
   } catch (error) {
     console.error("Error fetching exchange rates:", error)
-    return NextResponse.json({
-      rates: {
-        USD: 1,
-        EUR: 0.92,
-        XAF: INDICATIVE_FALLBACKS.XAF,
-        XOF: INDICATIVE_FALLBACKS.XOF,
-        NGN: INDICATIVE_FALLBACKS.NGN,
-        GHS: INDICATIVE_FALLBACKS.GHS,
-        ZAR: 18.5,
-        CNY: 7.24,
+    return NextResponse.json(
+      {
+        rates: {},
+        sources: {},
+        currencies: [],
+        lastUpdated: "",
+        label: "Daily reference rate",
+        provider: "frankfurter-v2",
+        error: "provider_error",
       },
-      sources: {
-        USD: "indicative",
-        EUR: "indicative",
-        XAF: "indicative",
-        XOF: "indicative",
-        NGN: "indicative",
-        GHS: "indicative",
-        ZAR: "indicative",
-        CNY: "indicative",
-      },
-      lastUpdated: new Date().toISOString().split("T")[0],
-      error: "Using fallback rates",
-    })
+      { status: 502 }
+    )
   }
 }

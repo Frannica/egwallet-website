@@ -7,7 +7,8 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "proof": "node scripts/proof-check.mjs http://localhost:3005"
+    "proof": "node scripts/proof-check.mjs http://localhost:3005",
+    "proof:converter": "node scripts/converter-proof.mjs http://localhost:3005"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
