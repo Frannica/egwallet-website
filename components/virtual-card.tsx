@@ -1,70 +1,76 @@
-import { Lock, Unlock, X, CreditCard } from "lucide-react"
+"use client"
+
+import { Lock, Unlock, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useLanguage } from "@/lib/language-context"
+import { SUPPORT_MAILTO_ACCESS } from "@/lib/site"
 
 export function VirtualCard() {
+  const { t } = useLanguage()
+
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-card">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="order-2 lg:order-1">
-            <div className="relative">
-              <div className="w-full max-w-sm mx-auto lg:mx-0 aspect-[1.586/1] bg-gradient-to-br from-primary via-primary/80 to-primary/60 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-foreground/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-24 h-24 bg-foreground/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-
-                <div className="relative z-10 h-full flex flex-col justify-between">
-                  <div className="flex justify-between items-start">
-                    <div className="w-12 h-8 bg-foreground/20 rounded" />
-                    <span className="text-primary-foreground/80 text-sm font-medium">E.G. Wallet</span>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="text-primary-foreground text-lg tracking-widest font-mono">•••• •••• •••• 4829</div>
-                    <div className="flex justify-between items-end">
-                      <div>
-                        <div className="text-primary-foreground/60 text-xs">Card Holder</div>
-                        <div className="text-primary-foreground text-sm">JOHN DOE</div>
-                      </div>
-                      <div>
-                        <div className="text-primary-foreground/60 text-xs">Expires</div>
-                        <div className="text-primary-foreground text-sm">12/28</div>
-                      </div>
+    <section id="virtual-card" className="scroll-mt-20 px-4 py-20 sm:px-6 lg:px-8">
+      <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2">
+        <div className="order-2 lg:order-1">
+          <div className="relative mx-auto max-w-sm lg:mx-0">
+            <div
+              className="relative aspect-[1.586/1] overflow-hidden rounded-2xl bg-gradient-to-br from-[#007AFF] via-[#1565C0] to-[#0D1B2E] p-6 shadow-lg"
+              aria-hidden="true"
+            >
+              <div className="absolute -end-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
+              <div className="absolute -bottom-10 -start-6 h-28 w-28 rounded-full bg-black/10" />
+              <div className="relative z-10 flex h-full flex-col justify-between">
+                <div className="flex items-start justify-between">
+                  <div className="h-8 w-12 rounded bg-white/25" />
+                  <span className="text-sm font-medium text-white/90">E.G. Wallet</span>
+                </div>
+                <div className="space-y-4">
+                  <div className="font-mono text-lg tracking-[0.2em] text-white">{t("cardNumberMask")}</div>
+                  <div className="flex justify-between">
+                    <div>
+                      <div className="text-xs text-white/70">{t("cardHolder")}</div>
+                      <div className="text-sm text-white">{t("cardHolderSample")}</div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-white/70">{t("expires")}</div>
+                      <div className="text-sm text-white">••/••</div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="absolute -bottom-2 -right-2 w-full h-full bg-primary/30 rounded-2xl -z-10" />
+            </div>
+            <p className="mt-3 text-center text-xs text-muted-foreground lg:text-start">{t("cardIllustrationNote")}</p>
+          </div>
+        </div>
+
+        <div className="order-1 space-y-6 lg:order-2">
+          <h2 className="font-display text-3xl font-semibold tracking-tight text-foreground text-balance sm:text-4xl">
+            {t("virtualCardTitle")}
+          </h2>
+          <p className="leading-relaxed text-muted-foreground">{t("virtualCardSubtitle")}</p>
+
+          <div className="flex flex-wrap gap-3">
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-muted px-4 py-3">
+              <Lock className="h-5 w-5 text-primary" />
+              <span className="text-sm text-foreground">{t("freezeCard")}</span>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-muted px-4 py-3">
+              <Unlock className="h-5 w-5 text-primary" />
+              <span className="text-sm text-foreground">{t("unfreezeCard")}</span>
+            </div>
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-muted px-4 py-3">
+              <CreditCard className="h-5 w-5 text-primary" />
+              <span className="text-sm text-foreground">{t("manageInApp")}</span>
             </div>
           </div>
 
-          <div className="order-1 lg:order-2 space-y-6">
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground text-balance">
-              Virtual debit card for secure online payments
-            </h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Get a virtual debit card that works everywhere online. Lock it when not in use, unlock for purchases, or
-              cancel specific transactions instantly.
-            </p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{t("cardAvailability")}</p>
 
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-3 px-4 py-3 bg-background rounded-xl border border-border">
-                <Lock className="w-5 h-5 text-primary" />
-                <span className="text-foreground text-sm">Lock Card</span>
-              </div>
-              <div className="flex items-center gap-3 px-4 py-3 bg-background rounded-xl border border-border">
-                <Unlock className="w-5 h-5 text-primary" />
-                <span className="text-foreground text-sm">Unlock Card</span>
-              </div>
-              <div className="flex items-center gap-3 px-4 py-3 bg-background rounded-xl border border-border">
-                <X className="w-5 h-5 text-primary" />
-                <span className="text-foreground text-sm">Cancel Payment</span>
-              </div>
-            </div>
-
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2">
-              <CreditCard className="w-4 h-4" /> Get Your Card
-            </Button>
-          </div>
+          <Button size="lg" className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+            <a href={SUPPORT_MAILTO_ACCESS}>
+              <CreditCard className="h-4 w-4" /> {t("cardCta")}
+            </a>
+          </Button>
         </div>
       </div>
     </section>

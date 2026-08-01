@@ -1,18 +1,36 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
+import { Plus_Jakarta_Sans, IBM_Plex_Mono, Noto_Sans_Arabic } from "next/font/google"
 import { LanguageProvider } from "@/lib/language-context"
 import "./globals.css"
 
-const _inter = Inter({ subsets: ["latin"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-body",
+})
+
+const plusJakartaDisplay = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-display",
+  weight: ["500", "600", "700"],
+})
+
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
+})
+
+const notoSansArabic = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-arabic",
+})
 
 export const metadata: Metadata = {
-  title: "E.G. Wallet - Your Global Digital Wallet",
+  title: "E.G. Wallet — Multi-currency digital wallet",
   description:
-    "Multi-currency digital wallet supporting XAF, XOF, NGN, GHS, ZAR, CNY, USD, EUR. Send, receive, and manage your money globally.",
-    generator: 'v0.app'
+    "E.G. Wallet is a multi-currency digital wallet for sending, receiving, and exchanging XAF, XOF, NGN, GHS, ZAR, CNY, USD, and EUR through the mobile app. Currently in closed testing.",
+  metadataBase: new URL("https://www.egwalletfinance.com"),
 }
 
 export default function RootLayout({
@@ -21,12 +39,14 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`font-sans antialiased`}>
-        <LanguageProvider>
-          {children}
-          <Analytics />
-        </LanguageProvider>
+    <html
+      lang="en"
+      dir="ltr"
+      suppressHydrationWarning
+      className={`${plusJakarta.variable} ${plusJakartaDisplay.variable} ${ibmPlexMono.variable} ${notoSansArabic.variable}`}
+    >
+      <body className="font-sans">
+        <LanguageProvider>{children}</LanguageProvider>
       </body>
     </html>
   )
