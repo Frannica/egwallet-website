@@ -1,46 +1,41 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { RefreshCw } from "lucide-react"
 import { useLanguage } from "@/lib/language-context"
-import { SITE } from "@/lib/site"
-
-const ALWAYS_INDICATIVE = new Set<string>(SITE.alwaysIndicativeCurrencies)
-
-const currencies = [
-  { code: "XAF", name: "Central African CFA", flag: "🇨🇲" },
-  { code: "XOF", name: "West African CFA", flag: "🇸🇳" },
-  { code: "NGN", name: "Nigerian Naira", flag: "🇳🇬" },
-  { code: "GHS", name: "Ghanaian Cedi", flag: "🇬🇭" },
-  { code: "ZAR", name: "South African Rand", flag: "🇿🇦" },
-  { code: "CNY", name: "Chinese Yuan", flag: "🇨🇳" },
-  { code: "USD", name: "US Dollar", flag: "🇺🇸" },
-  { code: "EUR", name: "Euro", flag: "🇪🇺" },
-]
+import { CURRENCY_CODES, CURRENCY_META, CurrencyCode } from "@/lib/currencies"
+import { CurrencyConverter } from "@/components/currency-converter"
 
 interface RatesPayload {
   rates: Record<string, number>
-  sources?: Record<string, "live" | "indicative">
+  sources?: Record<string, string>
+  currencies?: string[]
   lastUpdated: string
 }
 
 export function CurrencySection() {
   const { t } = useLanguage()
   const [rates, setRates] = useState<RatesPayload["rates"]>({})
-  const [sources, setSources] = useState<RatesPayload["sources"]>({})
   const [lastUpdated, setLastUpdated] = useState("")
   const [loading, setLoading] = useState(true)
+  const [availableCodes, setAvailableCodes] = useState<CurrencyCode[]>([])
 
   const fetchRates = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch("/api/exchange-rates")
       const data = (await response.json()) as RatesPayload
-      setRates(data.rates || {})
-      setSources(data.sources || {})
+      const nextRates = data.rates || {}
+      const functional = CURRENCY_CODES.filter(
+        (code) => typeof nextRates[code] === "number" && nextRates[code] > 0
+      )
+      setRates(nextRates)
+      setAvailableCodes(functional)
       setLastUpdated(data.lastUpdated || "")
     } catch (error) {
       console.error("Failed to fetch exchange rates:", error)
+      setRates({})
+      setAvailableCodes([])
     } finally {
       setLoading(false)
     }
@@ -48,9 +43,21 @@ export function CurrencySection() {
 
   useEffect(() => {
     fetchRates()
-    const interval = setInterval(fetchRates, 300000)
+    // Daily reference data — refresh periodically; not a claim of minute/hourly publishes.
+    const interval = setInterval(fetchRates, 60 * 60 * 1000)
     return () => clearInterval(interval)
   }, [fetchRates])
+
+  const cards = useMemo(
+    () =>
+      availableCodes.map((code) => ({
+        code,
+        name: CURRENCY_META[code].name,
+        flag: CURRENCY_META[code].flag,
+        rate: rates[code],
+      })),
+    [availableCodes, rates]
+  )
 
   return (
     <section id="currencies" className="section-soft scroll-mt-20 px-4 py-20 sm:px-6 lg:px-8">
@@ -74,16 +81,15 @@ export function CurrencySection() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          {currencies.map((currency) => {
-            const rate = rates[currency.code]
-            const source = ALWAYS_INDICATIVE.has(currency.code)
-              ? "indicative"
-              : sources?.[currency.code] || (typeof rate === "number" ? "live" : undefined)
-            return (
+        {cards.length === 0 && !loading ? (
+          <p className="text-center text-sm text-muted-foreground">{t("rateUnavailable")}</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 sm:gap-4">
+            {cards.map((currency) => (
               <div
                 key={currency.code}
                 className="rounded-2xl border border-border bg-white p-5 shadow-sm"
+                data-testid={`currency-card-${currency.code}`}
               >
                 <div className="mb-3 text-3xl" aria-hidden="true">
                   {currency.flag}
@@ -91,23 +97,24 @@ export function CurrencySection() {
                 <div className="font-display text-lg font-semibold text-foreground">{currency.code}</div>
                 <div className="text-sm text-muted-foreground">{currency.name}</div>
                 <div className="mt-3 font-mono text-xs text-primary">
-                  {typeof rate === "number"
-                    ? `1 USD = ${rate.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency.code}`
+                  {typeof currency.rate === "number"
+                    ? `1 USD = ${currency.rate.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency.code}`
                     : t("rateUnavailable")}
                 </div>
-                {source && (
-                  <div
-                    className={`mt-2 text-[11px] font-semibold uppercase tracking-wide ${
-                      source === "indicative" ? "text-amber-700" : "text-muted-foreground"
-                    }`}
-                  >
-                    {source === "live" ? t("liveRate") : t("indicativeRate")}
-                  </div>
-                )}
+                <div className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("dailyReferenceRate")}
+                </div>
               </div>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+        )}
+
+        <CurrencyConverter
+          rates={rates}
+          lastUpdated={lastUpdated}
+          loading={loading}
+          availableCodes={availableCodes}
+        />
 
         <div className="mx-auto mt-10 max-w-3xl space-y-3 text-sm leading-relaxed text-muted-foreground">
           <p>{t("currencyHoldNote")}</p>

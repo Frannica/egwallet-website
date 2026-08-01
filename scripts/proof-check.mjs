@@ -99,6 +99,24 @@ async function main() {
     mobile: badCurrencyClaim ? "FAIL" : "PASS",
     result: badCurrencyClaim ? "FAIL" : "PASS",
   })
+  const converterSrc = fs.existsSync(path.join(root, "components/currency-converter.tsx"))
+  const historyRoute = fs.existsSync(path.join(root, "app/api/exchange-history/route.ts"))
+  addRow({
+    element: "Currency converter component",
+    location: "components/currency-converter.tsx",
+    destination: converterSrc ? "present" : "missing",
+    desktop: converterSrc ? "PASS" : "FAIL",
+    mobile: converterSrc ? "PASS" : "FAIL",
+    result: converterSrc ? "PASS" : "FAIL",
+  })
+  addRow({
+    element: "Exchange-history API (Frankfurter only)",
+    location: "app/api/exchange-history/route.ts",
+    destination: historyRoute ? "present" : "missing",
+    desktop: historyRoute ? "PASS" : "FAIL",
+    mobile: historyRoute ? "PASS" : "FAIL",
+    result: historyRoute ? "PASS" : "FAIL",
+  })
   const vcAskAccess = /Ask about access/.test(marketingSrc)
   const vcUnavailableLabel = /Virtual cards are not available yet|Unavailable in closed testing/.test(marketingSrc)
   const vcComponent = fs.readFileSync(path.join(root, "components/virtual-card.tsx"), "utf8")
@@ -346,20 +364,21 @@ async function main() {
       })
     }
 
-    // Indicative labels for African currencies
+    // Daily reference labels (Frankfurter v2 — not Market / real-time)
     await page.goto(baseUrl, { waitUntil: "networkidle" })
     await page.locator("#currencies").scrollIntoViewIfNeeded()
     const currencyText = await page.locator("#currencies").innerText()
-    const indicativeOk =
-      /XAF[\s\S]*Indicative|Indicative[\s\S]*XAF|تقديري|Indicativa|Indicatif|参考|Indicative/i.test(currencyText) ||
-      currencyText.includes("XAF")
+    const referenceOk =
+      /Daily reference rate|Tasa de referencia diaria|Taux de référence quotidien|Taxa de referência diária|سعر مرجعي يومي|每日参考汇率|日次参考レート/i.test(
+        currencyText
+      ) && currencyText.includes("XAF")
     addRow({
       element: "Exchange-rate labels",
       location: "#currencies",
-      destination: "XAF/XOF/NGN/GHS indicative labeling present in section",
-      desktop: label === "desktop" ? (indicativeOk ? "PASS" : "FAIL") : "—",
-      mobile: label === "mobile" ? (indicativeOk ? "PASS" : "FAIL") : "—",
-      result: indicativeOk ? "PASS" : "FAIL",
+      destination: "Daily reference rate labeling present in section",
+      desktop: label === "desktop" ? (referenceOk ? "PASS" : "FAIL") : "—",
+      mobile: label === "mobile" ? (referenceOk ? "PASS" : "FAIL") : "—",
+      result: referenceOk ? "PASS" : "FAIL",
     })
 
     await page.screenshot({ path: path.join(outDir, `${label}-home.png`), fullPage: false })
@@ -432,7 +451,7 @@ async function main() {
     "## Disclosures (cannot work without external destinations)",
     "- Public App Store / Google Play / Expo URLs: not configured (`SITE.appStoreUrl`, `SITE.playStoreUrl` empty).",
     "- Public app login URL: not configured (`SITE.appLoginUrl` empty).",
-    "- Exchange-rate market feed: African currencies XAF/XOF/NGN/GHS always labeled Indicative when live feed unavailable.",
+    "- Exchange rates: Frankfurter v2 daily reference only — labeled Daily reference rate (not real-time/Market).",
     "",
   ].join("\n")
 
